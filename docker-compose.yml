@@ -1,7 +1,57 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    # Dev-only defaults – override via .env or environment before exposing to any network.
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: payment
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   payment-service:
     build: .
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=development
+      # Override host vars so the service reaches the Docker-networked containers,
+      # not localhost. All other variables come from the env_file above.
+      - DATABASE_HOST=postgres
+      - ARI_DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - payment-network
+
+networks:
+  payment-network:
+
+volumes:
+  postgres_data:
+  redis_data:

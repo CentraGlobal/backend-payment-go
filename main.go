@@ -7,6 +7,7 @@ import (
 	"github.com/CentraGlobal/backend-payment-go/internal/config"
 	"github.com/CentraGlobal/backend-payment-go/internal/db"
 	"github.com/CentraGlobal/backend-payment-go/internal/handlers"
+	"github.com/CentraGlobal/backend-payment-go/internal/infisical"
 	redisclient "github.com/CentraGlobal/backend-payment-go/internal/redis"
 	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
 	"github.com/gofiber/fiber/v2"
@@ -16,12 +17,16 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
+	if err := infisical.LoadSecrets(ctx); err != nil {
+		log.Fatalf("failed to load secrets from Infisical: %v", err)
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-
-	ctx := context.Background()
 
 	// Database pools (best-effort; service starts without them if unavailable)
 	var dbPool *pgxpool.Pool

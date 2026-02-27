@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: payment
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     networks:
       - payment-network
     healthcheck:
@@ -37,9 +36,8 @@ services:
       - .env
     environment:
       # Override host vars so the service reaches the Docker-networked containers,
-      # not localhost. All other variables come from the env_file above.
+      # not localhost. All other variables (including ARI_DB_*) come from the env_file above.
       - DATABASE_HOST=postgres
-      - ARI_DB_HOST=postgres
       - REDIS_HOST=redis
     depends_on:
       postgres:

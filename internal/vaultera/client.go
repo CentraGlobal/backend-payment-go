@@ -47,10 +47,10 @@ type Card struct {
 
 // CardResponse is returned after tokenizing or fetching a card.
 type CardResponse struct {
-	CardToken      string `json:"card_token"`
-	CardNumberMask string `json:"card_number_mask"`
-	CardType       string `json:"card_type"`
-	CardholderName string `json:"cardholder_name"`
+	CardToken       string `json:"card_token"`
+	CardNumberMask  string `json:"card_number_mask"`
+	CardType        string `json:"card_type"`
+	CardholderName  string `json:"cardholder_name"`
 	ExpirationMonth string `json:"expiration_month"`
 	ExpirationYear  string `json:"expiration_year"`
 }
@@ -67,9 +67,9 @@ type CaptureRequest struct {
 // CaptureResponse is the raw response from the target endpoint after Vaultera
 // injects the card data.
 type CaptureResponse struct {
-	StatusCode int             `json:"status_code"`
+	StatusCode int               `json:"status_code"`
 	Headers    map[string]string `json:"headers,omitempty"`
-	Body       json.RawMessage `json:"body"`
+	Body       json.RawMessage   `json:"body"`
 }
 
 // SendRequest describes a detokenize-and-forward call for a stored card.
@@ -82,9 +82,9 @@ type SendRequest struct {
 
 // SendResponse wraps the response from the downstream gateway.
 type SendResponse struct {
-	StatusCode int             `json:"status_code"`
+	StatusCode int               `json:"status_code"`
 	Headers    map[string]string `json:"headers,omitempty"`
-	Body       json.RawMessage `json:"body"`
+	Body       json.RawMessage   `json:"body"`
 }
 
 // SessionTokenRequest is used to create a new session token.

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/CentraGlobal/backend-payment-go/internal/handlers"
-	goredis "github.com/redis/go-redis/v9"
 	"github.com/gofiber/fiber/v2"
+	goredis "github.com/redis/go-redis/v9"
 )
 
 func TestHealthHandler_NoInfra(t *testing.T) {
@@ -69,4 +69,3 @@ func TestHealthHandler_Degraded_Redis(t *testing.T) {
 		t.Errorf("expected redis=unhealthy, got %q", result["redis"])
 	}
 }
-

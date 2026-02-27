@@ -26,9 +26,9 @@ type Reservation struct {
 	// CardToken is the Vaultera-issued reference token for the stored card.
 	// It is NOT raw card data and carries no PCI scope; however it is omitted
 	// from serialized output when empty.
-	CardToken         string            `db:"card_token"         json:"card_token,omitempty"`
-	TotalAmount       float64           `db:"total_amount"       json:"total_amount"`
-	Currency          string            `db:"currency"           json:"currency"`
-	CreatedAt         time.Time         `db:"created_at"         json:"created_at"`
-	UpdatedAt         time.Time         `db:"updated_at"         json:"updated_at"`
+	CardToken   string    `db:"card_token"         json:"card_token,omitempty"`
+	TotalAmount float64   `db:"total_amount"       json:"total_amount"`
+	Currency    string    `db:"currency"           json:"currency"`
+	CreatedAt   time.Time `db:"created_at"         json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"         json:"updated_at"`
 }

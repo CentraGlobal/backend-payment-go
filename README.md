@@ -98,6 +98,12 @@ docker compose up --build
 
 ### Tests
 ```bash
-go test ./...
+go test ./... -race
+```
+
+### Environment setup
+Copy `.env.example` to `.env` and fill in the values:
+```bash
+cp .env.example .env
 ```
 

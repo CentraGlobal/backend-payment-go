@@ -1,0 +1,21 @@
+# Binaries
+backend-payment-go
+*.exe
+*.out
+
+# Test binary
+*.test
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store

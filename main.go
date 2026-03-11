@@ -9,6 +9,7 @@ import (
 	"github.com/CentraGlobal/backend-payment-go/internal/handlers"
 	"github.com/CentraGlobal/backend-payment-go/internal/infisical"
 	redisclient "github.com/CentraGlobal/backend-payment-go/internal/redis"
+	"github.com/CentraGlobal/backend-payment-go/internal/services"
 	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -52,8 +53,15 @@ func main() {
 	// Vaultera PCI client
 	vaulteraClient := vaultera.NewClient(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
 
+	// Domain services (backed by the primary DB pool; degrade gracefully when nil)
+	svcs := handlers.Services{
+		Gateway:     services.NewPaymentGatewayService(dbPool),
+		CardToken:   services.NewCardTokenService(dbPool),
+		Transaction: services.NewTransactionService(dbPool),
+	}
+
 	// HTTP handlers
-	paymentHandler := handlers.NewPaymentHandler(vaulteraClient)
+	paymentHandler := handlers.NewPaymentHandler(vaulteraClient, svcs)
 
 	app := fiber.New()
 	app.Use(logger.New())

@@ -29,6 +29,14 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	// Validate auth configuration.
+	if cfg.Auth.Require && cfg.Auth.SharedSecret == "" {
+		log.Fatalf("AUTH_SHARED_SECRET is required when AUTH_REQUIRE=true")
+	}
+	if cfg.App.Env != "development" && !cfg.Auth.Require {
+		log.Printf("warning: AUTH_REQUIRE=false in non-development environment")
+	}
+
 	// Database pools (best-effort; service starts without them if unavailable)
 	var dbPool *pgxpool.Pool
 	var ariPool *pgxpool.Pool

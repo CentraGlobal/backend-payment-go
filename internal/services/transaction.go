@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CentraGlobal/backend-payment-go/internal/domain"
+	"github.com/CentraGlobal/backend-payment-go/internal/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -16,11 +16,11 @@ import (
 type TransactionService interface {
 	// CreatePending inserts a new transaction with status "pending" and returns
 	// it with DB-assigned fields.
-	CreatePending(ctx context.Context, tx *domain.Transaction) (*domain.Transaction, error)
+	CreatePending(ctx context.Context, tx *types.Transaction) (*types.Transaction, error)
 	// UpdateStatus sets the final status and provider metadata on a transaction.
-	UpdateStatus(ctx context.Context, id string, update domain.TransactionStatusUpdate) error
+	UpdateStatus(ctx context.Context, id string, update types.TransactionStatusUpdate) error
 	// GetByID returns a transaction by its UUID primary key.
-	GetByID(ctx context.Context, id string) (*domain.Transaction, error)
+	GetByID(ctx context.Context, id string) (*types.Transaction, error)
 }
 
 // PostgresTransactionService implements TransactionService against PostgreSQL.
@@ -36,14 +36,14 @@ func NewTransactionService(db *pgxpool.Pool) *PostgresTransactionService {
 
 // CreatePending inserts a new pending transaction record and returns the full
 // row including the DB-generated UUID and created_at timestamp.
-func (s *PostgresTransactionService) CreatePending(ctx context.Context, tx *domain.Transaction) (*domain.Transaction, error) {
+func (s *PostgresTransactionService) CreatePending(ctx context.Context, tx *types.Transaction) (*types.Transaction, error) {
 	if s.db == nil {
 		return nil, errors.New("transaction service: database not available")
 	}
 
 	op := tx.Operation
 	if op == "" {
-		op = domain.TxOpCharge
+		op = types.TxOpCharge
 	}
 
 	const q = `
@@ -80,7 +80,7 @@ func (s *PostgresTransactionService) CreatePending(ctx context.Context, tx *doma
 
 // UpdateStatus applies a resolved status and any provider fields to an existing
 // transaction. It also stamps processed_at or failed_at based on the outcome.
-func (s *PostgresTransactionService) UpdateStatus(ctx context.Context, id string, u domain.TransactionStatusUpdate) error {
+func (s *PostgresTransactionService) UpdateStatus(ctx context.Context, id string, u types.TransactionStatusUpdate) error {
 	if s.db == nil {
 		return errors.New("transaction service: database not available")
 	}
@@ -88,9 +88,9 @@ func (s *PostgresTransactionService) UpdateStatus(ctx context.Context, id string
 	now := time.Now().UTC()
 	var processedAt, failedAt *time.Time
 	switch u.Status {
-	case domain.TxStatusSucceeded:
+	case types.TxStatusSucceeded:
 		processedAt = &now
-	case domain.TxStatusFailed:
+	case types.TxStatusFailed:
 		failedAt = &now
 	}
 
@@ -124,7 +124,7 @@ func (s *PostgresTransactionService) UpdateStatus(ctx context.Context, id string
 }
 
 // GetByID returns a transaction by its UUID primary key.
-func (s *PostgresTransactionService) GetByID(ctx context.Context, id string) (*domain.Transaction, error) {
+func (s *PostgresTransactionService) GetByID(ctx context.Context, id string) (*types.Transaction, error) {
 	if s.db == nil {
 		return nil, errors.New("transaction service: database not available")
 	}
@@ -143,8 +143,8 @@ func (s *PostgresTransactionService) GetByID(ctx context.Context, id string) (*d
 }
 
 // scanTransaction decodes a single result row into a Transaction struct.
-func scanTransaction(row pgx.Row) (*domain.Transaction, error) {
-	var tx domain.Transaction
+func scanTransaction(row pgx.Row) (*types.Transaction, error) {
+	var tx types.Transaction
 	var requestPayload, responsePayload, metadata []byte
 	err := row.Scan(
 		&tx.ID, &tx.OrgID, &tx.HotelID,

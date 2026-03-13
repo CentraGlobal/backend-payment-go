@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/CentraGlobal/backend-payment-go/internal/domain"
 	"github.com/CentraGlobal/backend-payment-go/internal/services"
+	"github.com/CentraGlobal/backend-payment-go/internal/types"
 	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
 	"github.com/gofiber/fiber/v2"
 )
@@ -106,19 +106,19 @@ func (h *PaymentHandler) Tokenize(c *fiber.Ctx) error {
 
 	// Persist the card token record when all required context is available.
 	if h.cardSvc != nil && req.OrgID != "" && req.HotelID != "" && req.GatewayID != "" {
-		scope := domain.CardTokenScope(req.TokenScope)
+		scope := types.CardTokenScope(req.TokenScope)
 		if scope == "" {
-			scope = domain.TokenScopeSingleUse
+			scope = types.TokenScopeSingleUse
 		}
 
-		token := &domain.CardToken{
+		token := &types.CardToken{
 			OrgID:         req.OrgID,
 			HotelID:       req.HotelID,
 			GatewayID:     req.GatewayID,
 			VaultProvider: "vaultera",
 			VaultToken:    card.CardToken,
 			TokenScope:    scope,
-			Status:        domain.TokenStatusActive,
+			Status:        types.TokenStatusActive,
 		}
 		if req.ReservationID != "" {
 			token.ReservationID = &req.ReservationID
@@ -238,12 +238,12 @@ func (h *PaymentHandler) Charge(c *fiber.Ctx) error {
 	// Create a pending transaction record before the provider call.
 	var txID string
 	if h.txSvc != nil && req.OrgID != "" && req.HotelID != "" && req.GatewayID != "" {
-		op := domain.TransactionOperation(req.Operation)
+		op := types.TransactionOperation(req.Operation)
 		if op == "" {
-			op = domain.TxOpCharge
+			op = types.TxOpCharge
 		}
 
-		pendingTx := &domain.Transaction{
+		pendingTx := &types.Transaction{
 			OrgID:     req.OrgID,
 			HotelID:   req.HotelID,
 			GatewayID: req.GatewayID,
@@ -311,17 +311,17 @@ func (h *PaymentHandler) Charge(c *fiber.Ctx) error {
 }
 
 // buildTransactionUpdate constructs the status update from the provider response.
-func buildTransactionUpdate(resp *vaultera.SendResponse, providerErr error) domain.TransactionStatusUpdate {
+func buildTransactionUpdate(resp *vaultera.SendResponse, providerErr error) types.TransactionStatusUpdate {
 	if providerErr != nil {
 		msg := providerErr.Error()
-		return domain.TransactionStatusUpdate{
-			Status:         domain.TxStatusFailed,
+		return types.TransactionStatusUpdate{
+			Status:         types.TxStatusFailed,
 			FailureMessage: &msg,
 		}
 	}
 
-	update := domain.TransactionStatusUpdate{
-		Status: domain.TxStatusSucceeded,
+	update := types.TransactionStatusUpdate{
+		Status: types.TxStatusSucceeded,
 	}
 	if resp != nil {
 		if b, err := json.Marshal(resp); err == nil {

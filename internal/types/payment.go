@@ -1,6 +1,4 @@
-// Package domain defines the shared payment entities and their enum types,
-// mirroring the shared PostgreSQL schema used across Centra backends.
-package domain
+package types
 
 import (
 	"encoding/json"
@@ -77,7 +75,7 @@ const (
 )
 
 // ---------------------------------------------------------------------------
-// Domain structs
+// Shared payment structs
 // ---------------------------------------------------------------------------
 
 // PaymentGateway represents a row in the payment_gateways table.

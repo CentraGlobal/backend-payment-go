@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/CentraGlobal/backend-payment-go/internal/domain"
 	"github.com/CentraGlobal/backend-payment-go/internal/handlers"
+	"github.com/CentraGlobal/backend-payment-go/internal/types"
 	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,11 +20,11 @@ import (
 // ---------------------------------------------------------------------------
 
 type mockCardTokenService struct {
-	created *domain.CardToken
+	created *types.CardToken
 	err     error
 }
 
-func (m *mockCardTokenService) Create(_ context.Context, token *domain.CardToken) (*domain.CardToken, error) {
+func (m *mockCardTokenService) Create(_ context.Context, token *types.CardToken) (*types.CardToken, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -32,23 +32,23 @@ func (m *mockCardTokenService) Create(_ context.Context, token *domain.CardToken
 	m.created = token
 	return token, nil
 }
-func (m *mockCardTokenService) GetByID(_ context.Context, _ string) (*domain.CardToken, error) {
+func (m *mockCardTokenService) GetByID(_ context.Context, _ string) (*types.CardToken, error) {
 	return nil, nil
 }
-func (m *mockCardTokenService) GetByVaultToken(_ context.Context, _, _ string) (*domain.CardToken, error) {
+func (m *mockCardTokenService) GetByVaultToken(_ context.Context, _, _ string) (*types.CardToken, error) {
 	return nil, nil
 }
-func (m *mockCardTokenService) UpdateStatus(_ context.Context, _ string, _ domain.CardTokenStatus) error {
+func (m *mockCardTokenService) UpdateStatus(_ context.Context, _ string, _ types.CardTokenStatus) error {
 	return nil
 }
 
 type mockTransactionService struct {
-	created *domain.Transaction
-	updated *domain.TransactionStatusUpdate
+	created *types.Transaction
+	updated *types.TransactionStatusUpdate
 	err     error
 }
 
-func (m *mockTransactionService) CreatePending(_ context.Context, tx *domain.Transaction) (*domain.Transaction, error) {
+func (m *mockTransactionService) CreatePending(_ context.Context, tx *types.Transaction) (*types.Transaction, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -56,11 +56,11 @@ func (m *mockTransactionService) CreatePending(_ context.Context, tx *domain.Tra
 	m.created = tx
 	return tx, nil
 }
-func (m *mockTransactionService) UpdateStatus(_ context.Context, _ string, u domain.TransactionStatusUpdate) error {
+func (m *mockTransactionService) UpdateStatus(_ context.Context, _ string, u types.TransactionStatusUpdate) error {
 	m.updated = &u
 	return nil
 }
-func (m *mockTransactionService) GetByID(_ context.Context, _ string) (*domain.Transaction, error) {
+func (m *mockTransactionService) GetByID(_ context.Context, _ string) (*types.Transaction, error) {
 	return nil, nil
 }
 
@@ -332,7 +332,7 @@ func TestCharge_PersistsTransaction(t *testing.T) {
 	if txSvc.updated == nil {
 		t.Fatal("expected transaction status to be updated")
 	}
-	if txSvc.updated.Status != domain.TxStatusSucceeded {
+	if txSvc.updated.Status != types.TxStatusSucceeded {
 		t.Errorf("expected status succeeded, got %q", txSvc.updated.Status)
 	}
 }
@@ -366,7 +366,7 @@ func TestCharge_TransactionMarkedFailedOnProviderError(t *testing.T) {
 	if txSvc.updated == nil {
 		t.Fatal("expected transaction status to be updated on provider error")
 	}
-	if txSvc.updated.Status != domain.TxStatusFailed {
+	if txSvc.updated.Status != types.TxStatusFailed {
 		t.Errorf("expected status failed, got %q", txSvc.updated.Status)
 	}
 }

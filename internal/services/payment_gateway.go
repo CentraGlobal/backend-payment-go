@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/CentraGlobal/backend-payment-go/internal/domain"
+	"github.com/CentraGlobal/backend-payment-go/internal/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -16,9 +16,9 @@ import (
 // for a hotel from the shared payment_gateways table.
 type PaymentGatewayService interface {
 	// GetActiveDefault returns the active default gateway for the given org/hotel.
-	GetActiveDefault(ctx context.Context, orgID, hotelID string) (*domain.PaymentGateway, error)
+	GetActiveDefault(ctx context.Context, orgID, hotelID string) (*types.PaymentGateway, error)
 	// GetByID returns a single gateway by its primary key.
-	GetByID(ctx context.Context, id string) (*domain.PaymentGateway, error)
+	GetByID(ctx context.Context, id string) (*types.PaymentGateway, error)
 }
 
 // PostgresPaymentGatewayService implements PaymentGatewayService against
@@ -34,7 +34,7 @@ func NewPaymentGatewayService(db *pgxpool.Pool) *PostgresPaymentGatewayService {
 }
 
 // GetActiveDefault returns the single active+default gateway for the hotel.
-func (s *PostgresPaymentGatewayService) GetActiveDefault(ctx context.Context, orgID, hotelID string) (*domain.PaymentGateway, error) {
+func (s *PostgresPaymentGatewayService) GetActiveDefault(ctx context.Context, orgID, hotelID string) (*types.PaymentGateway, error) {
 	if s.db == nil {
 		return nil, errors.New("payment_gateway service: database not available")
 	}
@@ -49,7 +49,7 @@ func (s *PostgresPaymentGatewayService) GetActiveDefault(ctx context.Context, or
 }
 
 // GetByID returns a gateway row by its UUID primary key.
-func (s *PostgresPaymentGatewayService) GetByID(ctx context.Context, id string) (*domain.PaymentGateway, error) {
+func (s *PostgresPaymentGatewayService) GetByID(ctx context.Context, id string) (*types.PaymentGateway, error) {
 	if s.db == nil {
 		return nil, errors.New("payment_gateway service: database not available")
 	}
@@ -63,8 +63,8 @@ func (s *PostgresPaymentGatewayService) GetByID(ctx context.Context, id string) 
 }
 
 // scanGateway decodes a single row into a PaymentGateway struct.
-func scanGateway(row pgx.Row) (*domain.PaymentGateway, error) {
-	var gw domain.PaymentGateway
+func scanGateway(row pgx.Row) (*types.PaymentGateway, error) {
+	var gw types.PaymentGateway
 	// Nullable JSONB columns are scanned as *[]byte so that SQL NULL becomes nil.
 	var (
 		publicConfig  []byte

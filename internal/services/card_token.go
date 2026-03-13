@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/CentraGlobal/backend-payment-go/internal/domain"
+	"github.com/CentraGlobal/backend-payment-go/internal/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -14,13 +14,13 @@ import (
 // backed by the payment_card_tokens table.
 type CardTokenService interface {
 	// Create inserts a new card token record and returns it with DB-assigned fields.
-	Create(ctx context.Context, token *domain.CardToken) (*domain.CardToken, error)
+	Create(ctx context.Context, token *types.CardToken) (*types.CardToken, error)
 	// GetByID returns a card token by its UUID primary key.
-	GetByID(ctx context.Context, id string) (*domain.CardToken, error)
+	GetByID(ctx context.Context, id string) (*types.CardToken, error)
 	// GetByVaultToken returns a card token by gateway + vault token pair.
-	GetByVaultToken(ctx context.Context, gatewayID, vaultToken string) (*domain.CardToken, error)
+	GetByVaultToken(ctx context.Context, gatewayID, vaultToken string) (*types.CardToken, error)
 	// UpdateStatus changes the lifecycle status of a token.
-	UpdateStatus(ctx context.Context, id string, status domain.CardTokenStatus) error
+	UpdateStatus(ctx context.Context, id string, status types.CardTokenStatus) error
 }
 
 // PostgresCardTokenService implements CardTokenService against PostgreSQL.
@@ -36,7 +36,7 @@ func NewCardTokenService(db *pgxpool.Pool) *PostgresCardTokenService {
 
 // Create inserts a new row into payment_card_tokens using gen_random_uuid() for
 // the primary key, and returns the full record including DB-assigned fields.
-func (s *PostgresCardTokenService) Create(ctx context.Context, token *domain.CardToken) (*domain.CardToken, error) {
+func (s *PostgresCardTokenService) Create(ctx context.Context, token *types.CardToken) (*types.CardToken, error) {
 	if s.db == nil {
 		return nil, errors.New("card_token service: database not available")
 	}
@@ -60,11 +60,11 @@ func (s *PostgresCardTokenService) Create(ctx context.Context, token *domain.Car
 
 	scope := token.TokenScope
 	if scope == "" {
-		scope = domain.TokenScopeSingleUse
+		scope = types.TokenScopeSingleUse
 	}
 	status := token.Status
 	if status == "" {
-		status = domain.TokenStatusActive
+		status = types.TokenStatusActive
 	}
 
 	row := s.db.QueryRow(ctx, q,
@@ -84,7 +84,7 @@ func (s *PostgresCardTokenService) Create(ctx context.Context, token *domain.Car
 }
 
 // GetByID returns a card token by its primary key.
-func (s *PostgresCardTokenService) GetByID(ctx context.Context, id string) (*domain.CardToken, error) {
+func (s *PostgresCardTokenService) GetByID(ctx context.Context, id string) (*types.CardToken, error) {
 	if s.db == nil {
 		return nil, errors.New("card_token service: database not available")
 	}
@@ -99,7 +99,7 @@ func (s *PostgresCardTokenService) GetByID(ctx context.Context, id string) (*dom
 }
 
 // GetByVaultToken returns a card token by gateway_id + vault_token (unique pair).
-func (s *PostgresCardTokenService) GetByVaultToken(ctx context.Context, gatewayID, vaultToken string) (*domain.CardToken, error) {
+func (s *PostgresCardTokenService) GetByVaultToken(ctx context.Context, gatewayID, vaultToken string) (*types.CardToken, error) {
 	if s.db == nil {
 		return nil, errors.New("card_token service: database not available")
 	}
@@ -115,7 +115,7 @@ func (s *PostgresCardTokenService) GetByVaultToken(ctx context.Context, gatewayI
 }
 
 // UpdateStatus sets a new lifecycle status and bumps updated_at.
-func (s *PostgresCardTokenService) UpdateStatus(ctx context.Context, id string, status domain.CardTokenStatus) error {
+func (s *PostgresCardTokenService) UpdateStatus(ctx context.Context, id string, status types.CardTokenStatus) error {
 	if s.db == nil {
 		return errors.New("card_token service: database not available")
 	}
@@ -134,8 +134,8 @@ func (s *PostgresCardTokenService) UpdateStatus(ctx context.Context, id string, 
 }
 
 // scanCardToken decodes a single result row into a CardToken struct.
-func scanCardToken(row pgx.Row) (*domain.CardToken, error) {
-	var ct domain.CardToken
+func scanCardToken(row pgx.Row) (*types.CardToken, error) {
+	var ct types.CardToken
 	var metadata []byte
 	err := row.Scan(
 		&ct.ID, &ct.OrgID, &ct.HotelID,

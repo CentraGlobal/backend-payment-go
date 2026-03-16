@@ -95,7 +95,19 @@ type cardRequest struct {
 }
 
 type cardResponseWrapper struct {
-	Card cardResponse `json:"card"`
+	Data struct {
+		Type       string `json:"type"`
+		ID         string `json:"id"`
+		Attributes struct {
+			CardNumber      string `json:"card_number"`
+			CardToken       string `json:"card_token"`
+			CardType        string `json:"card_type"`
+			CardholderName  string `json:"cardholder_name"`
+			ExpirationMonth string `json:"expiration_month"`
+			ExpirationYear  string `json:"expiration_year"`
+			ServiceCode     string `json:"service_code"`
+		} `json:"attributes"`
+	} `json:"data"`
 }
 
 type cardResponse struct {
@@ -121,10 +133,14 @@ type sessionTokenRequest struct {
 }
 
 type sessionTokenResponseWrapper struct {
-	SessionToken struct {
-		Token string `json:"token"`
-		Scope string `json:"scope"`
-	} `json:"session_token"`
+	Data struct {
+		Type       string `json:"type"`
+		ID         string `json:"id"`
+		Attributes struct {
+			SessionToken string `json:"session_token"`
+			Scope        string `json:"scope"`
+		} `json:"attributes"`
+	} `json:"data"`
 }
 
 func (c *Client) CreateCard(ctx context.Context, card processor.Card) (*processor.CardResponse, error) {
@@ -147,12 +163,12 @@ func (c *Client) CreateCard(ctx context.Context, card processor.Card) (*processo
 		return nil, fmt.Errorf("vaultera: decode card response: %w", err)
 	}
 	return &processor.CardResponse{
-		CardToken:       wrapper.Card.CardToken,
-		CardMask:        wrapper.Card.CardNumberMask,
-		CardType:        wrapper.Card.CardType,
-		CardholderName:  wrapper.Card.CardholderName,
-		ExpirationMonth: wrapper.Card.ExpirationMonth,
-		ExpirationYear:  wrapper.Card.ExpirationYear,
+		CardToken:       wrapper.Data.Attributes.CardToken,
+		CardMask:        wrapper.Data.Attributes.CardNumber,
+		CardType:        wrapper.Data.Attributes.CardType,
+		CardholderName:  wrapper.Data.Attributes.CardholderName,
+		ExpirationMonth: wrapper.Data.Attributes.ExpirationMonth,
+		ExpirationYear:  wrapper.Data.Attributes.ExpirationYear,
 	}, nil
 }
 
@@ -166,12 +182,12 @@ func (c *Client) GetCard(ctx context.Context, cardToken string) (*processor.Card
 		return nil, fmt.Errorf("vaultera: decode card response: %w", err)
 	}
 	return &processor.CardResponse{
-		CardToken:       wrapper.Card.CardToken,
-		CardMask:        wrapper.Card.CardNumberMask,
-		CardType:        wrapper.Card.CardType,
-		CardholderName:  wrapper.Card.CardholderName,
-		ExpirationMonth: wrapper.Card.ExpirationMonth,
-		ExpirationYear:  wrapper.Card.ExpirationYear,
+		CardToken:       wrapper.Data.Attributes.CardToken,
+		CardMask:        wrapper.Data.Attributes.CardNumber,
+		CardType:        wrapper.Data.Attributes.CardType,
+		CardholderName:  wrapper.Data.Attributes.CardholderName,
+		ExpirationMonth: wrapper.Data.Attributes.ExpirationMonth,
+		ExpirationYear:  wrapper.Data.Attributes.ExpirationYear,
 	}, nil
 }
 
@@ -219,8 +235,8 @@ func (c *Client) CreateSessionToken(ctx context.Context, scope string) (*process
 		return nil, fmt.Errorf("vaultera: decode session_token response: %w", err)
 	}
 	return &processor.SessionTokenResponse{
-		Token: wrapper.SessionToken.Token,
-		Scope: wrapper.SessionToken.Scope,
+		Token: wrapper.Data.Attributes.SessionToken,
+		Scope: wrapper.Data.Attributes.Scope,
 	}, nil
 }
 

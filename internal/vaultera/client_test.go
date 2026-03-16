@@ -32,13 +32,17 @@ func TestCreateCard(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]any{
-			"card": map[string]string{
-				"card_token":       "tok_abc123",
-				"card_number_mask": "411111******1111",
-				"card_type":        "visa",
-				"cardholder_name":  "JOHN DOE",
-				"expiration_month": "12",
-				"expiration_year":  "2030",
+			"data": map[string]any{
+				"type": "card",
+				"id":   "tok_abc123",
+				"attributes": map[string]string{
+					"card_token":       "tok_abc123",
+					"card_number":      "411111******1111",
+					"card_type":        "visa",
+					"cardholder_name":  "JOHN DOE",
+					"expiration_month": "12",
+					"expiration_year":  "2030",
+				},
 			},
 		})
 	}))
@@ -69,10 +73,14 @@ func TestGetCard(t *testing.T) {
 			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
 		}
 		json.NewEncoder(w).Encode(map[string]any{
-			"card": map[string]string{
-				"card_token":       "tok_abc123",
-				"card_number_mask": "411111******1111",
-				"card_type":        "visa",
+			"data": map[string]any{
+				"type": "card",
+				"id":   "tok_abc123",
+				"attributes": map[string]string{
+					"card_token":  "tok_abc123",
+					"card_number": "411111******1111",
+					"card_type":   "visa",
+				},
 			},
 		})
 	}))
@@ -141,9 +149,13 @@ func TestCreateSessionToken(t *testing.T) {
 			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
 		}
 		json.NewEncoder(w).Encode(map[string]any{
-			"session_token": map[string]string{
-				"token": "st_xyz",
-				"scope": "card",
+			"data": map[string]any{
+				"type": "session_token",
+				"id":   "st_xyz",
+				"attributes": map[string]string{
+					"session_token": "st_xyz",
+					"scope":         "card",
+				},
 			},
 		})
 	}))

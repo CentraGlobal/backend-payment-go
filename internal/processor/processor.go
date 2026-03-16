@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"encoding/json"
 )
 
 type Card struct {
@@ -32,7 +33,7 @@ type SendRequest struct {
 type SendResponse struct {
 	StatusCode int               `json:"status_code"`
 	Headers    map[string]string `json:"headers,omitempty"`
-	Body       []byte            `json:"body"`
+	Body       json.RawMessage   `json:"body"`
 }
 
 type SessionTokenResponse struct {

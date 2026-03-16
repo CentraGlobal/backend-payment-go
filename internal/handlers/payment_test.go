@@ -15,8 +15,8 @@ import (
 
 func setupPaymentApp(vaulteraHandler http.Handler) (*fiber.App, *httptest.Server) {
 	vSrv := httptest.NewServer(vaulteraHandler)
-	adapter := vaultera.NewAdapter("test-key", vSrv.URL)
-	ph := handlers.NewPaymentHandler(adapter)
+	client := vaultera.NewClient("test-key", vSrv.URL)
+	ph := handlers.NewPaymentHandler(client)
 
 	app := fiber.New()
 	v1 := app.Group("/v1")

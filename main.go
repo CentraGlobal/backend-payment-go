@@ -66,7 +66,7 @@ func main() {
 	case "pcibooking":
 		proc = pcibooking.NewClient(cfg.PCIBooking.APIKey, cfg.PCIBooking.BaseURL)
 	case "vaultera":
-		proc = vaultera.NewAdapter(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
+		proc = vaultera.NewClient(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
 	default:
 		log.Fatalf("unknown processor: %s (supported: vaultera, pcibooking)", cfg.Processor.Name)
 	}

@@ -9,6 +9,8 @@ import (
 	"github.com/CentraGlobal/backend-payment-go/internal/handlers"
 	"github.com/CentraGlobal/backend-payment-go/internal/infisical"
 	"github.com/CentraGlobal/backend-payment-go/internal/middleware"
+	"github.com/CentraGlobal/backend-payment-go/internal/pcibooking"
+	"github.com/CentraGlobal/backend-payment-go/internal/processor"
 	redisclient "github.com/CentraGlobal/backend-payment-go/internal/redis"
 	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
 	"github.com/gofiber/fiber/v2"
@@ -58,11 +60,20 @@ func main() {
 		log.Printf("warning: failed to connect to Redis: %v", pingErr)
 	}
 
-	// Vaultera PCI client
-	vaulteraClient := vaultera.NewClient(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
+	// Processor selection
+	var proc processor.Processor
+	switch cfg.Processor.Name {
+	case "pcibooking":
+		proc = pcibooking.NewClient(cfg.PCIBooking.APIKey, cfg.PCIBooking.BaseURL)
+	case "vaultera":
+		proc = vaultera.NewAdapter(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
+	default:
+		log.Fatalf("unknown processor: %s (supported: vaultera, pcibooking)", cfg.Processor.Name)
+	}
+	log.Printf("using processor: %s", proc.Name())
 
 	// HTTP handlers
-	paymentHandler := handlers.NewPaymentHandler(vaulteraClient)
+	paymentHandler := handlers.NewPaymentHandler(proc)
 
 	app := fiber.New()
 	app.Use(logger.New())

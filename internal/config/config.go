@@ -42,6 +42,17 @@ type VaulteraConfig struct {
 	BaseURL string `envconfig:"BASE_URL" default:"https://pci.vaultera.co/api/v1"`
 }
 
+// PCIBookingConfig holds the PCI Booking settings.
+type PCIBookingConfig struct {
+	APIKey  string `envconfig:"API_KEY"`
+	BaseURL string `envconfig:"BASE_URL" default:"https://service.pcibooking.net"`
+}
+
+// ProcessorConfig holds the active processor selection.
+type ProcessorConfig struct {
+	Name string `envconfig:"NAME" default:"vaultera"` // "vaultera" or "pcibooking"
+}
+
 // AuthConfig holds the server-to-server shared secret auth settings.
 type AuthConfig struct {
 	SharedSecret string `envconfig:"SHARED_SECRET"`
@@ -51,12 +62,14 @@ type AuthConfig struct {
 
 // Config aggregates all service configuration.
 type Config struct {
-	App      AppConfig
-	Database DatabaseConfig
-	ARIDB    ARIDBConfig
-	Redis    RedisConfig
-	Vaultera VaulteraConfig
-	Auth     AuthConfig
+	App        AppConfig
+	Database   DatabaseConfig
+	ARIDB      ARIDBConfig
+	Redis      RedisConfig
+	Vaultera   VaulteraConfig
+	PCIBooking PCIBookingConfig
+	Processor  ProcessorConfig
+	Auth       AuthConfig
 }
 
 // Load reads configuration from environment variables.
@@ -76,6 +89,12 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if err := envconfig.Process("VAULTERA", &cfg.Vaultera); err != nil {
+		return nil, err
+	}
+	if err := envconfig.Process("PCI_BOOKING", &cfg.PCIBooking); err != nil {
+		return nil, err
+	}
+	if err := envconfig.Process("PROCESSOR", &cfg.Processor); err != nil {
 		return nil, err
 	}
 	if err := envconfig.Process("AUTH", &cfg.Auth); err != nil {

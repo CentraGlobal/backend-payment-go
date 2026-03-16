@@ -13,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// setupPaymentApp builds a Fiber app with a mock Vaultera server injected.
 func setupPaymentApp(vaulteraHandler http.Handler) (*fiber.App, *httptest.Server) {
 	vSrv := httptest.NewServer(vaulteraHandler)
 	client := vaultera.NewClient("test-key", vSrv.URL)

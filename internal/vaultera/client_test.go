@@ -7,12 +7,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/CentraGlobal/backend-payment-go/internal/processor"
 	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
 )
 
-// newTestClient creates a Vaultera client pointed at the given test server URL.
 func newTestClient(serverURL string) *vaultera.Client {
 	return vaultera.NewClient("test-api-key", serverURL)
+}
+
+func TestClient_Name(t *testing.T) {
+	client := vaultera.NewClient("key", "https://example.com")
+	if client.Name() != "vaultera" {
+		t.Errorf("expected name vaultera, got %s", client.Name())
+	}
 }
 
 func TestCreateCard(t *testing.T) {
@@ -38,7 +45,7 @@ func TestCreateCard(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv.URL)
-	card, err := client.CreateCard(context.Background(), vaultera.Card{
+	card, err := client.CreateCard(context.Background(), processor.Card{
 		CardNumber:      "4111111111111111",
 		CardType:        "visa",
 		CardholderName:  "JOHN DOE",
@@ -51,8 +58,8 @@ func TestCreateCard(t *testing.T) {
 	if card.CardToken != "tok_abc123" {
 		t.Errorf("expected card_token tok_abc123, got %q", card.CardToken)
 	}
-	if card.CardNumberMask != "411111******1111" {
-		t.Errorf("unexpected card_number_mask %q", card.CardNumberMask)
+	if card.CardMask != "411111******1111" {
+		t.Errorf("unexpected card_mask %q", card.CardMask)
 	}
 }
 
@@ -106,12 +113,16 @@ func TestSendCard(t *testing.T) {
 		if r.Method != http.MethodPost || r.URL.Path != "/cards/tok_abc123/send" {
 			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
 		}
-		json.NewEncoder(w).Encode(vaultera.SendResponse{StatusCode: 200})
+		json.NewEncoder(w).Encode(map[string]any{
+			"status_code": 200,
+			"headers":     map[string]string{},
+			"body":        `{"status":"success"}`,
+		})
 	}))
 	defer srv.Close()
 
 	client := newTestClient(srv.URL)
-	resp, err := client.SendCard(context.Background(), "tok_abc123", vaultera.SendRequest{
+	resp, err := client.SendCard(context.Background(), "tok_abc123", processor.SendRequest{
 		Method: "POST",
 		URL:    "https://api.stripe.com/v1/charges",
 		Body:   `{"amount":1000,"currency":"usd","source":"%CARD_NUMBER%"}`,

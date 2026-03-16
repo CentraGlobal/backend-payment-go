@@ -1,29 +1,21 @@
 package handlers
 
 import (
-	"github.com/CentraGlobal/backend-payment-go/internal/vaultera"
+	"github.com/CentraGlobal/backend-payment-go/internal/processor"
 	"github.com/gofiber/fiber/v2"
 )
 
-// PaymentHandler wraps the Vaultera client and exposes payment-related routes.
 type PaymentHandler struct {
-	vaultera *vaultera.Client
+	processor processor.Processor
 }
 
-// NewPaymentHandler creates a new PaymentHandler.
-func NewPaymentHandler(v *vaultera.Client) *PaymentHandler {
-	return &PaymentHandler{vaultera: v}
+func NewPaymentHandler(p processor.Processor) *PaymentHandler {
+	return &PaymentHandler{processor: p}
 }
 
-// ---------------------------------------------------------------------------
-// Session
-// ---------------------------------------------------------------------------
-
-// GetSession returns a Vaultera session token for use in the card-capture iframe.
-// GET /v1/session
 func (h *PaymentHandler) GetSession(c *fiber.Ctx) error {
 	scope := c.Query("scope", "card")
-	token, err := h.vaultera.CreateSessionToken(c.Context(), scope)
+	token, err := h.processor.CreateSessionToken(c.Context(), scope)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": err.Error(),
@@ -32,17 +24,10 @@ func (h *PaymentHandler) GetSession(c *fiber.Ctx) error {
 	return c.JSON(token)
 }
 
-// ---------------------------------------------------------------------------
-// Cards / Tokenization
-// ---------------------------------------------------------------------------
-
-// tokenizeRequest is the request body for the tokenize endpoint.
 type tokenizeRequest struct {
-	Card vaultera.Card `json:"card"`
+	Card processor.Card `json:"card"`
 }
 
-// Tokenize stores a card in Vaultera and returns its token.
-// POST /v1/payments/tokenize
 func (h *PaymentHandler) Tokenize(c *fiber.Ctx) error {
 	var req tokenizeRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -51,7 +36,7 @@ func (h *PaymentHandler) Tokenize(c *fiber.Ctx) error {
 		})
 	}
 
-	card, err := h.vaultera.CreateCard(c.Context(), req.Card)
+	card, err := h.processor.CreateCard(c.Context(), req.Card)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": err.Error(),
@@ -60,11 +45,9 @@ func (h *PaymentHandler) Tokenize(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(card)
 }
 
-// GetCard returns masked card info for a given token.
-// GET /v1/payments/cards/:token
 func (h *PaymentHandler) GetCard(c *fiber.Ctx) error {
 	token := c.Params("token")
-	card, err := h.vaultera.GetCard(c.Context(), token)
+	card, err := h.processor.GetCard(c.Context(), token)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": err.Error(),
@@ -73,11 +56,9 @@ func (h *PaymentHandler) GetCard(c *fiber.Ctx) error {
 	return c.JSON(card)
 }
 
-// DeleteCard removes a stored card token from Vaultera.
-// DELETE /v1/payments/cards/:token
 func (h *PaymentHandler) DeleteCard(c *fiber.Ctx) error {
 	token := c.Params("token")
-	if err := h.vaultera.DeleteCard(c.Context(), token); err != nil {
+	if err := h.processor.DeleteCard(c.Context(), token); err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -85,11 +66,6 @@ func (h *PaymentHandler) DeleteCard(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
-// ---------------------------------------------------------------------------
-// Charge / Authorize
-// ---------------------------------------------------------------------------
-
-// chargeRequest is the request body for the charge endpoint.
 type chargeRequest struct {
 	CardToken string            `json:"card_token"`
 	Method    string            `json:"method"`
@@ -98,9 +74,6 @@ type chargeRequest struct {
 	Body      string            `json:"body"`
 }
 
-// Charge detokenizes a stored card and forwards the request to the downstream
-// payment gateway via Vaultera.
-// POST /v1/payments/charge
 func (h *PaymentHandler) Charge(c *fiber.Ctx) error {
 	var req chargeRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -115,14 +88,14 @@ func (h *PaymentHandler) Charge(c *fiber.Ctx) error {
 		})
 	}
 
-	sendReq := vaultera.SendRequest{
+	sendReq := processor.SendRequest{
 		Method:  req.Method,
 		URL:     req.URL,
 		Headers: req.Headers,
 		Body:    req.Body,
 	}
 
-	resp, err := h.vaultera.SendCard(c.Context(), req.CardToken, sendReq)
+	resp, err := h.processor.SendCard(c.Context(), req.CardToken, sendReq)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": err.Error(),

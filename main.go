@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/CentraGlobal/backend-payment-go/internal/config"
 	"github.com/CentraGlobal/backend-payment-go/internal/db"
@@ -62,10 +63,23 @@ func main() {
 
 	// Processor selection
 	var proc processor.Processor
-	switch cfg.Processor.Name {
+	procName := strings.TrimSpace(strings.ToLower(cfg.Processor.Name))
+	switch procName {
 	case "pcibooking":
+		if cfg.PCIBooking.APIKey == "" {
+			log.Fatalf("PCIBOOKING_API_KEY (or cfg.PCIBooking.APIKey) must be set when PROCESSOR_NAME=pcibooking")
+		}
+		if cfg.PCIBooking.BaseURL == "" {
+			log.Fatalf("PCIBOOKING_BASE_URL (or cfg.PCIBooking.BaseURL) must be set when PROCESSOR_NAME=pcibooking")
+		}
 		proc = pcibooking.NewClient(cfg.PCIBooking.APIKey, cfg.PCIBooking.BaseURL)
 	case "vaultera":
+		if cfg.Vaultera.APIKey == "" {
+			log.Fatalf("VAULTERA_API_KEY (or cfg.Vaultera.APIKey) must be set when PROCESSOR_NAME=vaultera")
+		}
+		if cfg.Vaultera.BaseURL == "" {
+			log.Fatalf("VAULTERA_BASE_URL (or cfg.Vaultera.BaseURL) must be set when PROCESSOR_NAME=vaultera")
+		}
 		proc = vaultera.NewClient(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
 	default:
 		log.Fatalf("unknown processor: %s (supported: vaultera, pcibooking)", cfg.Processor.Name)

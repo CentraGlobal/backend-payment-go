@@ -36,7 +36,14 @@ func TestGetSession(t *testing.T) {
 			t.Errorf("unexpected path %s", r.URL.Path)
 		}
 		json.NewEncoder(w).Encode(map[string]any{
-			"session_token": map[string]string{"token": "st_test", "scope": "card"},
+			"data": map[string]any{
+				"type": "session_token",
+				"id":   "1",
+				"attributes": map[string]string{
+					"session_token": "st_test",
+					"scope":         "card",
+				},
+			},
 		})
 	})
 
@@ -65,12 +72,16 @@ func TestGetSession(t *testing.T) {
 func TestTokenize(t *testing.T) {
 	mockVaultera := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{
-			"card": map[string]string{
-				"card_token":       "tok_new",
-				"card_number_mask": "411111******1111",
-				"card_type":        "visa",
-				"expiration_month": "12",
-				"expiration_year":  "2030",
+			"data": map[string]any{
+				"type": "card",
+				"id":   "1",
+				"attributes": map[string]string{
+					"card_token":       "tok_new",
+					"card_number":      "4111111111111111",
+					"card_type":        "visa",
+					"expiration_month": "12",
+					"expiration_year":  "2030",
+				},
 			},
 		})
 	})

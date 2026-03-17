@@ -245,3 +245,21 @@ func (c *Client) CaptureFormURL(sessionToken string) string {
 	params.Set("session_token", sessionToken)
 	return c.baseURL + "/capture_form?" + params.Encode()
 }
+
+// GetPaymentGateways is not supported by the vaultera provider.
+// UPG is only available via the pci_booking_upg provider.
+func (c *Client) GetPaymentGateways(_ context.Context) ([]processor.GatewayInfo, error) {
+	return nil, fmt.Errorf("vaultera: UPG is not supported; use the pci_booking_upg provider instead")
+}
+
+// GetCredentialsStructure is not supported by the vaultera provider.
+// UPG is only available via the pci_booking_upg provider.
+func (c *Client) GetCredentialsStructure(_ context.Context, _ string) (map[string]any, error) {
+	return nil, fmt.Errorf("vaultera: UPG is not supported; use the pci_booking_upg provider instead")
+}
+
+// ChargeUPG is not supported by the vaultera provider.
+// UPG is only available via the pci_booking_upg provider.
+func (c *Client) ChargeUPG(_ context.Context, _ processor.UPGChargeRequest) (*processor.UPGChargeResponse, error) {
+	return nil, fmt.Errorf("vaultera: UPG is not supported; use the pci_booking_upg provider instead")
+}

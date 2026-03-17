@@ -44,13 +44,14 @@ type VaulteraConfig struct {
 
 // PCIBookingConfig holds the PCI Booking settings.
 type PCIBookingConfig struct {
-	APIKey  string `envconfig:"API_KEY"`
-	BaseURL string `envconfig:"BASE_URL" default:"https://service.pcibooking.net"`
+	APIKey     string `envconfig:"API_KEY"`
+	BaseURL    string `envconfig:"BASE_URL" default:"https://service.pcibooking.net"`
+	UPGEnabled bool   `envconfig:"UPG_ENABLED" default:"false"`
 }
 
 // ProcessorConfig holds the active processor selection.
 type ProcessorConfig struct {
-	Name string `envconfig:"NAME" default:"vaultera"` // "vaultera" or "pcibooking"
+	Name string `envconfig:"NAME" default:"vaultera"` // "vaultera", "pcibooking", or "pci_booking_upg"
 }
 
 // AuthConfig holds the server-to-server shared secret auth settings.

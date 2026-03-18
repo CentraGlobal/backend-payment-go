@@ -73,6 +73,14 @@ func main() {
 			log.Fatalf("PCIBOOKING_BASE_URL (or cfg.PCIBooking.BaseURL) must be set when PROCESSOR_NAME=pcibooking")
 		}
 		proc = pcibooking.NewClient(cfg.PCIBooking.APIKey, cfg.PCIBooking.BaseURL)
+	case "pci_booking_upg":
+		if cfg.PCIBooking.APIKey == "" {
+			log.Fatalf("PCI_BOOKING_API_KEY must be set when PROCESSOR_NAME=pci_booking_upg")
+		}
+		if cfg.PCIBooking.BaseURL == "" {
+			log.Fatalf("PCI_BOOKING_BASE_URL must be set when PROCESSOR_NAME=pci_booking_upg")
+		}
+		proc = pcibooking.NewClient(cfg.PCIBooking.APIKey, cfg.PCIBooking.BaseURL)
 	case "vaultera":
 		if cfg.Vaultera.APIKey == "" {
 			log.Fatalf("VAULTERA_API_KEY (or cfg.Vaultera.APIKey) must be set when PROCESSOR_NAME=vaultera")
@@ -82,7 +90,7 @@ func main() {
 		}
 		proc = vaultera.NewClient(cfg.Vaultera.APIKey, cfg.Vaultera.BaseURL)
 	default:
-		log.Fatalf("unknown processor: %s (supported: vaultera, pcibooking)", cfg.Processor.Name)
+		log.Fatalf("unknown processor: %s (supported: vaultera, pcibooking, pci_booking_upg)", cfg.Processor.Name)
 	}
 	log.Printf("using processor: %s", proc.Name())
 
@@ -105,6 +113,15 @@ func main() {
 	payments.Post("/charge", paymentHandler.Charge)
 	payments.Get("/cards/:token", paymentHandler.GetCard)
 	payments.Delete("/cards/:token", paymentHandler.DeleteCard)
+
+	// UPG routes are registered when the pci_booking_upg processor is selected.
+	if procName == "pci_booking_upg" {
+		payments.Post("/charge/upg", paymentHandler.ChargeUPG)
+		gateways := v1.Group("/gateways")
+		gateways.Get("/", paymentHandler.GetGateways)
+		gateways.Get("/:name/structure", paymentHandler.GetGatewayStructure)
+		log.Printf("UPG routes enabled")
+	}
 
 	log.Fatal(app.Listen(":" + cfg.App.Port))
 }

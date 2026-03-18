@@ -263,3 +263,95 @@ func (c *Client) CaptureFormURL(sessionToken string) string {
 	params.Set("session_token", sessionToken)
 	return c.baseURL + "/api/payments/paycard/ui?" + params.Encode()
 }
+
+// upgGatewayInfo is the raw response shape returned by GET /api/paymentGateway.
+type upgGatewayInfo struct {
+	Name             string   `json:"name"`
+	CredentialFields []string `json:"credential_fields"`
+}
+
+// upgChargeRequest is the payload sent to POST /api/paymentGateway.
+type upgChargeRequest struct {
+	Operation     string  `json:"Operation"`
+	CardToken     string  `json:"CardToken"`
+	Amount        float64 `json:"Amount"`
+	Currency      string  `json:"Currency"`
+	GatewayName   string  `json:"GatewayName"`
+	CredentialsID string  `json:"CredentialsID"`
+}
+
+// upgChargeResponse is the raw response shape returned by POST /api/paymentGateway.
+type upgChargeResponse struct {
+	Status        string          `json:"Status"`
+	TransactionID string          `json:"TransactionID"`
+	Message       string          `json:"Message"`
+	Raw           json.RawMessage `json:"Raw,omitempty"`
+}
+
+// GetPaymentGateways returns the list of payment gateways supported by PCI Booking UPG.
+// API: GET /api/paymentGateway
+func (c *Client) GetPaymentGateways(ctx context.Context) ([]processor.GatewayInfo, error) {
+	data, _, err := c.do(ctx, http.MethodGet, "/api/paymentGateway", nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var raw []upgGatewayInfo
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("pcibooking: decode payment gateways response: %w", err)
+	}
+
+	gateways := make([]processor.GatewayInfo, len(raw))
+	for i, g := range raw {
+		gateways[i] = processor.GatewayInfo{
+			Name:             g.Name,
+			CredentialFields: g.CredentialFields,
+		}
+	}
+	return gateways, nil
+}
+
+// GetCredentialsStructure returns the required credential fields for a named gateway.
+// API: GET /api/credentials/{gatewayName}/structure
+func (c *Client) GetCredentialsStructure(ctx context.Context, gatewayName string) (map[string]any, error) {
+	data, _, err := c.do(ctx, http.MethodGet, "/api/credentials/"+gatewayName+"/structure", nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var structure map[string]any
+	if err := json.Unmarshal(data, &structure); err != nil {
+		return nil, fmt.Errorf("pcibooking: decode credentials structure response: %w", err)
+	}
+	return structure, nil
+}
+
+// ChargeUPG processes a charge via the PCI Booking Universal Payment Gateway.
+// API: POST /api/paymentGateway with Operation=Charge
+func (c *Client) ChargeUPG(ctx context.Context, req processor.UPGChargeRequest) (*processor.UPGChargeResponse, error) {
+	upgReq := upgChargeRequest{
+		Operation:     "Charge",
+		CardToken:     req.CardToken,
+		Amount:        req.Amount,
+		Currency:      req.Currency,
+		GatewayName:   req.GatewayName,
+		CredentialsID: req.CredentialsID,
+	}
+
+	data, _, err := c.do(ctx, http.MethodPost, "/api/paymentGateway", nil, upgReq)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp upgChargeResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("pcibooking: decode upg charge response: %w", err)
+	}
+
+	return &processor.UPGChargeResponse{
+		Status:        resp.Status,
+		TransactionID: resp.TransactionID,
+		Message:       resp.Message,
+		Raw:           resp.Raw,
+	}, nil
+}

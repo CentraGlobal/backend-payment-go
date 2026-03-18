@@ -114,14 +114,10 @@ func main() {
 	payments.Get("/cards/:token", paymentHandler.GetCard)
 	payments.Delete("/cards/:token", paymentHandler.DeleteCard)
 
-	// UPG routes are registered when the pci_booking_upg processor is selected.
-	if procName == "pci_booking_upg" {
-		payments.Post("/charge/upg", paymentHandler.ChargeUPG)
-		gateways := v1.Group("/gateways")
-		gateways.Get("/", paymentHandler.GetGateways)
-		gateways.Get("/:name/structure", paymentHandler.GetGatewayStructure)
-		log.Printf("UPG routes enabled")
-	}
+	// Gateway metadata routes (always registered; return 503 when processor does not support UPG)
+	gateways := v1.Group("/gateways")
+	gateways.Get("/", paymentHandler.GetGateways)
+	gateways.Get("/:name/structure", paymentHandler.GetGatewayStructure)
 
 	log.Fatal(app.Listen(":" + cfg.App.Port))
 }

@@ -44,9 +44,8 @@ type VaulteraConfig struct {
 
 // PCIBookingConfig holds the PCI Booking settings.
 type PCIBookingConfig struct {
-	APIKey     string `envconfig:"API_KEY"`
-	BaseURL    string `envconfig:"BASE_URL" default:"https://service.pcibooking.net"`
-	UPGEnabled bool   `envconfig:"UPG_ENABLED" default:"false"`
+	APIKey  string `envconfig:"API_KEY"`
+	BaseURL string `envconfig:"BASE_URL" default:"https://service.pcibooking.net"`
 }
 
 // ProcessorConfig holds the active processor selection.

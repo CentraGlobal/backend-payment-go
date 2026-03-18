@@ -114,10 +114,8 @@ func main() {
 	payments.Get("/cards/:token", paymentHandler.GetCard)
 	payments.Delete("/cards/:token", paymentHandler.DeleteCard)
 
-	// UPG routes — registered when the pci_booking_upg processor is selected or
-	// PCI_BOOKING_UPG_ENABLED=true is explicitly set.
-	upgEnabled := cfg.PCIBooking.UPGEnabled || procName == "pci_booking_upg"
-	if upgEnabled {
+	// UPG routes are registered when the pci_booking_upg processor is selected.
+	if procName == "pci_booking_upg" {
 		payments.Post("/charge/upg", paymentHandler.ChargeUPG)
 		gateways := v1.Group("/gateways")
 		gateways.Get("/", paymentHandler.GetGateways)

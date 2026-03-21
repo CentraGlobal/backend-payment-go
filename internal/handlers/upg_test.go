@@ -18,12 +18,12 @@ import (
 // mockUPGProcessor is a test double that implements processor.Processor with
 // configurable UPG behaviour.
 type mockUPGProcessor struct {
-	gateways    []processor.GatewayInfo
-	structure   map[string]any
-	charge      *processor.UPGChargeResponse
-	sendResp    *processor.SendResponse
-	err         error
-	sendErr     error
+	gateways  []processor.GatewayInfo
+	structure map[string]any
+	charge    *processor.UPGChargeResponse
+	sendResp  *processor.SendResponse
+	err       error
+	sendErr   error
 }
 
 func (m *mockUPGProcessor) CreateCard(_ context.Context, _ processor.Card) (*processor.CardResponse, error) {
@@ -428,4 +428,3 @@ func TestGetGatewayStructure_OtherError_Returns502(t *testing.T) {
 		t.Errorf("expected 502, got %d", resp.StatusCode)
 	}
 }
-

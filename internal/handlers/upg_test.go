@@ -60,7 +60,7 @@ func setupUnifiedApp(mock *mockUPGProcessor) *fiber.App {
 	v1 := app.Group("/v1")
 	payments := v1.Group("/payments")
 	payments.Post("/charge", ph.Charge)
-	gateways := v1.Group("/gateways")
+	gateways := v1.Group("/upg/gateways")
 	gateways.Get("/", ph.GetGateways)
 	gateways.Get("/:name/structure", ph.GetGatewayStructure)
 	return app
@@ -297,7 +297,7 @@ func TestGetGateways_Success(t *testing.T) {
 	}
 	app := setupUnifiedApp(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/v1/gateways/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/v1/upg/gateways/", nil)
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
@@ -326,7 +326,7 @@ func TestGetGateways_UPGNotSupported_Returns503(t *testing.T) {
 	}
 	app := setupUnifiedApp(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/v1/gateways/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/v1/upg/gateways/", nil)
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
@@ -351,7 +351,7 @@ func TestGetGateways_OtherError_Returns502(t *testing.T) {
 	}
 	app := setupUnifiedApp(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/v1/gateways/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/v1/upg/gateways/", nil)
 	resp, _ := app.Test(req)
 	resp.Body.Close()
 
@@ -369,7 +369,7 @@ func TestGetGatewayStructure_Success(t *testing.T) {
 	}
 	app := setupUnifiedApp(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/v1/gateways/Stripe/structure", nil)
+	req := httptest.NewRequest(http.MethodGet, "/v1/upg/gateways/Stripe/structure", nil)
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
@@ -395,7 +395,7 @@ func TestGetGatewayStructure_UPGNotSupported_Returns503(t *testing.T) {
 	}
 	app := setupUnifiedApp(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/v1/gateways/Stripe/structure", nil)
+	req := httptest.NewRequest(http.MethodGet, "/v1/upg/gateways/Stripe/structure", nil)
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
@@ -420,7 +420,7 @@ func TestGetGatewayStructure_OtherError_Returns502(t *testing.T) {
 	}
 	app := setupUnifiedApp(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/v1/gateways/Unknown/structure", nil)
+	req := httptest.NewRequest(http.MethodGet, "/v1/upg/gateways/Unknown/structure", nil)
 	resp, _ := app.Test(req)
 	resp.Body.Close()
 

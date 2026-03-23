@@ -48,8 +48,8 @@ This service acts as a standalone, security-focused gateway between Centra's var
 | `GET` | `/v1/payments/cards/:token` | Get masked card info |
 | `DELETE` | `/v1/payments/cards/:token` | Delete a stored card token |
 | `POST` | `/v1/payments/charge` | Detokenize and forward a charge to a gateway |
-| `GET` | `/v1/gateways` | **(UPG only)** List payment gateways available via UPG. Requires `PROCESSOR_NAME=pci_booking_upg`; returns `503 UPG_NOT_AVAILABLE` otherwise. |
-| `GET` | `/v1/gateways/:name/structure` | **(UPG only)** Get credential field schema for a named UPG gateway. Requires `PROCESSOR_NAME=pci_booking_upg`; returns `503 UPG_NOT_AVAILABLE` otherwise. |
+| `GET` | `/v1/upg/gateways` | **(UPG only)** List payment gateways available via UPG. Requires `PROCESSOR_NAME=pci_booking_upg`; returns `503 UPG_NOT_AVAILABLE` otherwise. |
+| `GET` | `/v1/upg/gateways/:name/structure` | **(UPG only)** Get credential field schema for a named UPG gateway. Requires `PROCESSOR_NAME=pci_booking_upg`; returns `503 UPG_NOT_AVAILABLE` otherwise. |
 
 ### Example: Tokenize a card
 ```bash

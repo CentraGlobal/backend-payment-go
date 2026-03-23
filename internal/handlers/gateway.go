@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// GetGateways handles GET /v1/gateways.
+// GetGateways handles GET /v1/upg/gateways.
 // UPG-only: returns the list of payment gateways available through the UPG-capable
 // processor (pci_booking_upg). Returns 503 UPG_NOT_AVAILABLE when the service is
 // configured with a non-UPG processor (e.g. vaultera or pcibooking).
@@ -27,7 +27,7 @@ func (h *PaymentHandler) GetGateways(c *fiber.Ctx) error {
 	return c.JSON(gateways)
 }
 
-// GetGatewayStructure handles GET /v1/gateways/:name/structure.
+// GetGatewayStructure handles GET /v1/upg/gateways/:name/structure.
 // UPG-only: returns the required credential fields for the named payment gateway via UPG.
 // Returns 503 UPG_NOT_AVAILABLE when the service is configured with a non-UPG processor
 // (e.g. vaultera or pcibooking).

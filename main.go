@@ -116,7 +116,7 @@ func main() {
 
 	// UPG-only gateway metadata routes. These endpoints are only functional when the service is
 	// configured with the pci_booking_upg processor. All other processors return 503 UPG_NOT_AVAILABLE.
-	gateways := v1.Group("/gateways")
+	gateways := v1.Group("/upg/gateways")
 	gateways.Get("/", paymentHandler.GetGateways)
 	gateways.Get("/:name/structure", paymentHandler.GetGatewayStructure)
 

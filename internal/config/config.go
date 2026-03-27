@@ -50,7 +50,7 @@ type PCIBookingConfig struct {
 
 // ProcessorConfig holds the active processor selection.
 type ProcessorConfig struct {
-	Name string `envconfig:"NAME" default:"vaultera"` // "vaultera" or "pcibooking"
+	Name string `envconfig:"NAME" default:"vaultera"` // "vaultera", "pcibooking", or "pci_booking_upg"
 }
 
 // AuthConfig holds the server-to-server shared secret auth settings.
